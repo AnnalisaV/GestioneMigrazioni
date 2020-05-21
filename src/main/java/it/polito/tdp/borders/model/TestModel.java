@@ -7,7 +7,7 @@ public class TestModel {
 		
 		Model m = new Model() ;
 		
-		m.creaGrafo(1950);
+		m.creaGrafo(2005);
 		
 		List<CountryAndNumber> list = m.getCountryAndNumber() ;
 		

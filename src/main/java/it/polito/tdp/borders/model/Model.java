@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -18,8 +19,11 @@ public class Model {
 	private Graph<Country, DefaultEdge> graph ;
 	private Map<Integer,Country> countriesMap ;
 	
+	private Simulator sim; 
+	
 	public Model() {
 		this.countriesMap = new HashMap<>() ;
+		this.sim= new Simulator();
 
 	}
 	
@@ -52,4 +56,40 @@ public class Model {
 		return list ;
 	}
 
+	public void simula(Country partenza) {
+		
+		//controllo che la simulazione venga fatta solo a grafo creato
+		if (this.graph!=null) {
+		 
+		
+		sim.inizializzazione(partenza, this.graph);
+		sim.run();
+		}
+		
+	}
+	
+	public Integer getPasso() {
+		
+		return this.sim.getPassi(); 
+	}
+	
+	public List<CountryAndNumber> getStanziali(){
+		Map<Country, Integer> stanziali= this.sim.getStanziali(); 
+		List<CountryAndNumber> risultato= new ArrayList<>(); 
+		
+		for (Country c : stanziali.keySet()) {
+			CountryAndNumber nuovo = new CountryAndNumber(c,  stanziali.get(c)); 
+			risultato.add(nuovo); 
+		} 
+		Collections.sort(risultato); //gia' implementato per utilita' del grafo
+		
+		return risultato; 
+	}
+	
+	public List<Country> getCountries() {
+		List<Country> countries = new ArrayList<>(this.graph.vertexSet()); 
+		Collections.sort(countries);
+		return countries; 
+		
+	}
 }
