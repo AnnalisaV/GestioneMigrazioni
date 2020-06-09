@@ -19,6 +19,8 @@ public class Model {
 	private BordersDAO dao; 
 	private Graph<Country, DefaultEdge> graph; 
 	
+	Simulator simu = new Simulator(); 
+	
 	public Model() {
 		this.idMapCountries= new HashMap<>(); 
 		this.dao= new BordersDAO(); 
@@ -61,6 +63,35 @@ public class Model {
 		for (Country c : this.graph.vertexSet()) {
 			int nConf= this.graph.degreeOf(c); 
 			lista.add(new CountryAndNConf(c, nConf)); 
+		}
+		
+		Collections.sort(lista);
+		return lista; 
+	}
+	
+	public List<Country> getVertex(){
+		List<Country> vertex= new ArrayList<>(this.graph.vertexSet());
+		return vertex; 
+		
+	}
+	
+	public void simulazione(Country c) {
+		
+		simu.init(c, this.graph);
+		simu.run();
+		
+		}
+	
+	public int getPassi() {
+		return this.simu.getTime(); 
+	}
+	
+	public List<CountryAndNConf> getCountryAndNPeople(){
+		List<CountryAndNConf> lista= new ArrayList<>(); 
+		
+		for (Country c : this.simu.getCountryNumeroPersone().keySet()) {
+			CountryAndNConf cc = new CountryAndNConf(c, simu.getCountryNumeroPersone().get(c)); 
+			lista.add(cc); 
 		}
 		
 		Collections.sort(lista);

@@ -8,10 +8,12 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.borders.model.Country;
 import it.polito.tdp.borders.model.CountryAndNConf;
 import it.polito.tdp.borders.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -30,10 +32,13 @@ public class FXMLController {
     private TextField txtAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxNazione"
-    private ComboBox<?> boxNazione; // Value injected by FXMLLoader
+    private ComboBox<Country> boxNazione; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
+    
+    @FXML
+    private Button btnSimula;
 
     @FXML
     void doCalcolaConfini(ActionEvent event) {
@@ -63,11 +68,33 @@ public class FXMLController {
     	for (CountryAndNConf cc : this.model.getConfinanti()) {
     		txtResult.appendText(cc.toString()+"\n");
     	}
+    	
+    
+    	//pulisco e popolo tendina
+    	this.boxNazione.getItems().removeAll(this.boxNazione.getItems()); 
+    	this.boxNazione.getItems().addAll(model.getVertex()); 
+    	
+    	//abilito la simulazione dopo aver creato grafo
+    	this.btnSimula.setDisable(false);
     }
 
     @FXML
     void doSimula(ActionEvent event) {
 
+    	txtResult.clear();
+    	if (this.boxNazione.getValue()==null) {
+    		txtResult.appendText("ERRORE : Selezionare una nazione");
+    		return; 
+    	}
+    	
+    	model.simulazione(this.boxNazione.getValue());
+    	
+    	txtResult.appendText("Simulazione per "+this.boxNazione.getValue()+" in "+
+    	this.model.getPassi()+" steps\n");
+    	for (CountryAndNConf c : this.model.getCountryAndNPeople()) {
+    		txtResult.appendText(c.toString()+"\n");
+    	}
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -79,5 +106,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.btnSimula.setDisable(true);
     }
 }
