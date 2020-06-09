@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import it.polito.tdp.borders.model.CountryAndNumber;
+import it.polito.tdp.borders.model.CountryAndNConf;
 import it.polito.tdp.borders.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -38,28 +38,31 @@ public class FXMLController {
     @FXML
     void doCalcolaConfini(ActionEvent event) {
     	txtResult.clear();
-    	String annoS = txtAnno.getText();
-		try {
-			int anno = Integer.parseInt(annoS);
-
-			model.creaGrafo(anno);
-			
-			List<CountryAndNumber> list = model.getCountryAndNumber();
-
-			if (list.size() == 0) {
-				txtResult.appendText("Non ci sono stati corrispondenti\n");
-			} else {
-				txtResult.appendText("Stati nell'anno "+anno+"\n");
-				for (CountryAndNumber c : list) {
-					txtResult.appendText(String.format("%s %d\n",
-							c.getCountry().getStateName(), c.getNumber()));
-				}
-			}
-
-		} catch (NumberFormatException e) {
-			txtResult.appendText("Errore di formattazione dell'anno\n");
-			return;
-		}
+    	
+    	int year=0; 
+    	if (this.txtAnno.getLength()==0) {
+    		txtResult.appendText("ERRORE : Indicare un anno \n");
+    		return; 
+    	}
+    	
+    	try {
+    		year= Integer.parseInt(this.txtAnno.getText()); 
+    	}catch(NumberFormatException nfe){
+    		txtResult.appendText("ERRORE : Indicare un anno in numeri \n");
+    		return; 
+    	}
+    	if(year < 1816 || year>2006) {
+    		txtResult.appendText("ERRORE : Indicare un anno compreso fra 1816-2006 \n");
+    		return; 
+    	}
+    	
+    	//ok 
+    	model.creaGrafo(year);
+    	txtResult.appendText("Grafo creato con "+model.nVertex()+" vertex and "+model.nArchi()+" edges \n");
+    	
+    	for (CountryAndNConf cc : this.model.getConfinanti()) {
+    		txtResult.appendText(cc.toString()+"\n");
+    	}
     }
 
     @FXML

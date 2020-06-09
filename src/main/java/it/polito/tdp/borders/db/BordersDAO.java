@@ -1,7 +1,8 @@
 package it.polito.tdp.borders.db;
 
-import it.polito.tdp.borders.model.Adiacenza;
+
 import it.polito.tdp.borders.model.Country;
+import it.polito.tdp.borders.model.CoupleCountries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class BordersDAO {
 	
-	public List<Country> loadAllCountries(Map<Integer,Country> countriesMap) {
+	public void loadAllCountries(Map<Integer,Country> countriesMap) {
 		
 		String sql = 
 				"SELECT ccode,StateAbb,StateNme " +
@@ -28,7 +29,7 @@ public class BordersDAO {
 			
 			ResultSet rs = st.executeQuery() ;
 			
-			List<Country> list = new LinkedList<Country>() ;
+			//List<Country> list = new LinkedList<Country>() ;
 			
 			while( rs.next() ) {
 				
@@ -39,14 +40,14 @@ public class BordersDAO {
 							rs.getString("StateAbb"), 
 							rs.getString("StateNme")) ;
 					countriesMap.put(c.getcCode(), c);
-					list.add(c);
-				} else 
-					list.add(countriesMap.get(rs.getInt("ccode")));
+					//list.add(c);
+				} //else 
+					//list.add(countriesMap.get(rs.getInt("ccode")));
 			}
 			
 			conn.close() ;
 			
-			return list ;
+			//return list ;
 			
 			
 		} catch (SQLException e) {
@@ -54,84 +55,46 @@ public class BordersDAO {
 			e.printStackTrace();
 		}
 		
-		return null ;
+		//return null ;
 	}
+
+	/**
+	 * Lista di {@code Country} confinanti via terra prima dell'anno indicato
+	 * @param year
+	 * @return
+	 */
+	public List<CoupleCountries> getCouples(int year, Map<Integer, Country> idMap) {
+		String sql="SELECT state1no, state2no " + 
+				"FROM contiguity " + 
+				"WHERE conttype=?  AND YEAR<=? " + 
+				"AND state1no>state2no " + 
+				"group BY state1no, state2no ";  //group by e' superfluo
 	
-	public List<Country> getCountriesFromYear(int anno,Map<Integer,Country> countriesMap) {
-		String sql = "select * from country " + 
-				"where CCode in ( " + 
-				"select state1no " + 
-				"from contiguity " + 
-				"where year<=? and conttype=1)" ;
+		List <CoupleCountries> lista= new ArrayList<>(); 
 		
 		try {
 			Connection conn = DBConnect.getConnection() ;
-
-			PreparedStatement st = conn.prepareStatement(sql) ;
-			
-			st.setInt(1, anno);
+            PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, 1); //sempre per noi
+			st.setInt(2, year);
 			ResultSet rs = st.executeQuery() ;
-			
-			List<Country> list = new LinkedList<Country>() ;
 			
 			while( rs.next() ) {
+				Country c1= idMap.get(rs.getInt("state1no")); 
+				Country c2= idMap.get(rs.getInt("state2no"));
 				
-				if(countriesMap.get(rs.getInt("ccode")) == null){
-					Country c = new Country(
-							rs.getInt("ccode"),
-							rs.getString("StateAbb"), 
-							rs.getString("StateNme")) ;
-					countriesMap.put(c.getcCode(), c);
-					list.add(c);
-				} else 
-					list.add(countriesMap.get(rs.getInt("ccode")));
+				CoupleCountries cc = new CoupleCountries(c1, c2); 
+				lista.add(cc); 
 			}
-			
 			conn.close() ;
 			
-			return list ;
-			
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return null ;
-
-	}
-	
-	public List<Adiacenza> getCoppieAdiacenti(int anno) {
-		String sql = "select state1no, state2no " + 
-				"from contiguity " + 
-				"where year<=? " + 
-				"and conttype=1 " + 
-				"and state1no < state2no" ;
-		
-		List<Adiacenza> result = new ArrayList<>() ;
-		
-		try {
-			Connection conn = DBConnect.getConnection() ;
-
-			PreparedStatement st = conn.prepareStatement(sql) ;
-			
-			st.setInt(1, anno);
-			
-			ResultSet rs = st.executeQuery() ;
-			
-			while(rs.next()) {
-				result.add(new Adiacenza(rs.getInt("state1no"), rs.getInt("state2no"))) ;
-			}
-			
-			conn.close();
-			return result ;
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null ;
-		}
-		
+		return lista;
 	}
 	
 	
